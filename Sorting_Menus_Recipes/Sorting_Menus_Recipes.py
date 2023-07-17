@@ -3,10 +3,14 @@ class Recipe:
         self.name = name
         self.ingredients = ingredients
         self.instructions = instructions
+        self.image = None  # Placeholder for the recipe image
+
+    def add_image(self, image_url):
+        self.image = image_url
 
 class RestaurantApp:
     def __init__(self):
-        self.menus = {}  # A dictionary to store menus, where keys are menu names and values are lists of recipes.
+        self.menus = {}
 
     def add_menu(self, menu_name):
         if menu_name not in self.menus:
@@ -27,11 +31,25 @@ class RestaurantApp:
                     recipe.name = new_recipe.name
                     recipe.ingredients = new_recipe.ingredients
                     recipe.instructions = new_recipe.instructions
+                    recipe.image = new_recipe.image
                     break
 
     def remove_recipe_from_menu(self, menu_name, recipe_name):
         if menu_name in self.menus:
             self.menus[menu_name] = [recipe for recipe in self.menus[menu_name] if recipe.name != recipe_name]
+
+class RestaurantView:
+    @staticmethod
+    def display_menus_and_recipes(app):
+        print("\nMenus and Recipes:")
+        for menu_name, recipes in app.menus.items():
+            print(f"\nMenu: {menu_name}")
+            for recipe in recipes:
+                print(f"Recipe: {recipe.name}")
+                print(f"Ingredients: {', '.join(recipe.ingredients)}")
+                print(f"Instructions: {recipe.instructions}")
+                print(f"Image URL: {recipe.image}" if recipe.image else "No image available")
+                print()
 
 def main():
     restaurant = RestaurantApp()
@@ -42,9 +60,10 @@ def main():
         print("3. Add Recipe to Menu")
         print("4. Update Recipe in Menu")
         print("5. Remove Recipe from Menu")
-        print("6. Exit")
-        new_varnew_var = choice = new_func()
-        
+        print("6. View Menus and Recipes")
+        print("7. Exit")
+
+        choice = new_func()
 
         if choice == 1:
             menu_name = input("Enter the name of the menu: ")
@@ -57,11 +76,14 @@ def main():
             print(f"Menu '{menu_name}' removed successfully!")
 
         elif choice == 3:
-           
+            menu_name = input("Enter the name of the menu: ")
             recipe_name = input("Enter the name of the recipe: ")
             ingredients = input("Enter ingredients (comma-separated): ").split(",")
             instructions = input("Enter the recipe instructions: ")
+            image_url = input("Enter the image URL for the recipe (leave blank if none): ")
             recipe = Recipe(recipe_name, ingredients, instructions)
+            if image_url:
+                recipe.add_image(image_url)
             restaurant.add_recipe_to_menu(menu_name, recipe)
             print(f"Recipe '{recipe_name}' added to menu '{menu_name}' successfully!")
 
@@ -70,7 +92,10 @@ def main():
             old_recipe_name = input("Enter the name of the recipe to update: ")
             ingredients = input("Enter new ingredients (comma-separated): ").split(",")
             instructions = input("Enter the new recipe instructions: ")
+            image_url = input("Enter the new image URL for the recipe (leave blank if none): ")
             new_recipe = Recipe(old_recipe_name, ingredients, instructions)
+            if image_url:
+                new_recipe.add_image(image_url)
             restaurant.update_recipe_in_menu(menu_name, old_recipe_name, new_recipe)
             print(f"Recipe '{old_recipe_name}' updated in menu '{menu_name}' successfully!")
 
@@ -81,6 +106,9 @@ def main():
             print(f"Recipe '{recipe_name}' removed from menu '{menu_name}' successfully!")
 
         elif choice == 6:
+            RestaurantView.display_menus_and_recipes(restaurant)
+
+        elif choice == 7:
             print("Exiting the app. Goodbye!")
             break
 

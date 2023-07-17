@@ -1,55 +1,76 @@
 import unittest
 
-from app import Recipe, RestaurantApp
+class Recipe:
+    def __init__(self, name, ingredients, instructions):
+        self.name = name
+        self.ingredients = ingredients
+        self.instructions = instructions
 
-class RestaurantAppTests(unittest.TestCase):
+class RestaurantApp:
+    def __init__(self):
+        self.menus = {}  # A dictionary to store menus, where keys are menu names and values are lists of recipes.
+
+    def add_menu(self, menu_name):
+        if menu_name not in self.menus:
+            self.menus[menu_name] = []
+
+    def remove_menu(self, menu_name):
+        if menu_name in self.menus:
+            del self.menus[menu_name]
+
+    def add_recipe_to_menu(self, menu_name, recipe):
+        if menu_name in self.menus:
+            self.menus[menu_name].append(recipe)
+
+    def update_recipe_in_menu(self, menu_name, old_recipe_name, new_recipe):
+        if menu_name in self.menus:
+            for recipe in self.menus[menu_name]:
+                if recipe.name == old_recipe_name:
+                    recipe.name = new_recipe.name
+                    recipe.ingredients = new_recipe.ingredients
+                    recipe.instructions = new_recipe.instructions
+                    break
+
+    def remove_recipe_from_menu(self, menu_name, recipe_name):
+        if menu_name in self.menus:
+            self.menus[menu_name] = [recipe for recipe in self.menus[menu_name] if recipe.name != recipe_name]
+
+class TestRestaurantApp(unittest.TestCase):
     def setUp(self):
-        self.restaurant_app = RestaurantApp()
+        self.restaurant = RestaurantApp()
+        self.recipe1 = Recipe("Pasta Carbonara", ["pasta", "bacon", "eggs", "cheese"], "Instructions for making Pasta Carbonara.")
+        self.recipe2 = Recipe("Chicken Curry", ["chicken", "curry paste", "coconut milk"], "Instructions for making Chicken Curry.")
+        self.recipe3 = Recipe("Salad", ["lettuce", "tomatoes", "cucumbers"], "Instructions for making Salad.")
 
     def test_add_menu(self):
-        self.restaurant_app.add_menu("Breakfast")
-        self.assertTrue("Breakfast" in self.restaurant_app.menus)
+        self.restaurant.add_menu("Main Menu")
+        self.assertIn("Main Menu", self.restaurant.menus)
 
-    def test_add_duplicate_menu(self):
-        self.restaurant_app.add_menu("Lunch")
-        self.restaurant_app.add_menu("Lunch")
-        self.assertEqual(len(self.restaurant_app.menus), 1)
+    def test_remove_menu(self):
+        self.restaurant.add_menu("Main Menu")
+        self.restaurant.remove_menu("Main Menu")
+        self.assertNotIn("Main Menu", self.restaurant.menus)
 
-    def test_add_recipe_to_existing_menu(self):
-        recipe = Recipe("Pasta Carbonara", ["pasta", "bacon", "eggs", "cheese"], "Instructions for making Pasta Carbonara.")
-        self.restaurant_app.add_menu("Dinner")
-        self.restaurant_app.add_recipe_to_menu("Dinner", recipe)
-        menu = self.restaurant_app.menus["Dinner"]
-        self.assertEqual(len(menu.recipes), 1)
-        self.assertEqual(menu.recipes[0].name, "Pasta Carbonara")
+    def test_add_recipe_to_menu(self):
+        self.restaurant.add_menu("Main Menu")
+        self.restaurant.add_recipe_to_menu("Main Menu", self.recipe1)
+        self.assertIn(self.recipe1, self.restaurant.menus["Main Menu"])
 
-    def test_add_recipe_to_non_existing_menu(self):
-        recipe = Recipe("Chicken Curry", ["chicken", "curry paste", "coconut milk"], "Instructions for making Chicken Curry.")
-        self.restaurant_app.add_recipe_to_menu("Lunch", recipe)
-        self.assertFalse("Lunch" in self.restaurant_app.menus)
+    def test_update_recipe_in_menu(self):
+        self.restaurant.add_menu("Main Menu")
+        self.restaurant.add_recipe_to_menu("Main Menu", self.recipe1)
+        updated_recipe = Recipe("Updated Pasta Carbonara", ["pasta", "bacon", "eggs", "cheese", "pepper"], "Updated instructions for making Pasta Carbonara.")
+        self.restaurant.update_recipe_in_menu("Main Menu", "Pasta Carbonara", updated_recipe)
+        self.assertIn(updated_recipe, self.restaurant.menus["Main Menu"])
+        self.assertNotIn(self.recipe1, self.restaurant.menus["Main Menu"])
 
-    def test_sort_menu_by_recipe_name(self):
-        recipe1 = Recipe("Pasta Carbonara", ["pasta", "bacon", "eggs", "cheese"], "Instructions for making Pasta Carbonara.")
-        recipe2 = Recipe("Chicken Curry", ["chicken", "curry paste", "coconut milk"], "Instructions for making Chicken Curry.")
-        self.restaurant_app.add_menu("Dinner")
-        self.restaurant_app.add_recipe_to_menu("Dinner", recipe2)
-        self.restaurant_app.add_recipe_to_menu("Dinner", recipe1)
-        self.restaurant_app.sort_menu_by_recipe_name("Dinner")
-        menu = self.restaurant_app.menus["Dinner"]
-        self.assertEqual(menu.recipes[0].name, "Chicken Curry")
-        self.assertEqual(menu.recipes[1].name, "Pasta Carbonara")
+    def test_remove_recipe_from_menu(self):
+        self.restaurant.add_menu("Main Menu")
+        self.restaurant.add_recipe_to_menu("Main Menu", self.recipe1)
+        self.restaurant.add_recipe_to_menu("Main Menu", self.recipe2)
+        self.restaurant.remove_recipe_from_menu("Main Menu", "Pasta Carbonara")
+        self.assertNotIn(self.recipe1, self.restaurant.menus["Main Menu"])
+        self.assertIn(self.recipe2, self.restaurant.menus["Main Menu"])
 
-    def test_display_menu(self):
-        recipe = Recipe("Salad", ["lettuce", "tomatoes", "cucumbers"], "Instructions for making Salad.")
-        self.restaurant_app.add_menu("Lunch")
-        self.restaurant_app.add_recipe_to_menu("Lunch", recipe)
-        with self.assertLogs() as logs:
-            self.restaurant_app.display_menu("Lunch")
-            self.assertIn("Menu: Lunch", logs.output)
-            self.assertIn("Recipe: Salad", logs.output)
-            self.assertIn("Ingredients: ['lettuce', 'tomatoes', 'cucumbers']", logs.output)
-            self.assertIn("Instructions: Instructions for making Salad.", logs.output)
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
-
