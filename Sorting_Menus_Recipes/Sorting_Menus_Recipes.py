@@ -3,7 +3,7 @@ class Recipe:
         self.name = name
         self.ingredients = ingredients
         self.instructions = instructions
-        self.image = None  # Placeholder for the recipe image
+        self.image = None 
 
     def add_image(self, image_url):
         self.image = image_url
@@ -11,6 +11,7 @@ class Recipe:
 class RestaurantApp:
     def __init__(self):
         self.menus = {}
+        self.recipes_hash = {}
 
     def add_menu(self, menu_name):
         if menu_name not in self.menus:
@@ -23,20 +24,30 @@ class RestaurantApp:
     def add_recipe_to_menu(self, menu_name, recipe):
         if menu_name in self.menus:
             self.menus[menu_name].append(recipe)
+            self.recipes_hash[recipe.name] = recipe
 
     def update_recipe_in_menu(self, menu_name, old_recipe_name, new_recipe):
         if menu_name in self.menus:
-            for recipe in self.menus[menu_name]:
+            for i, recipe in enumerate(self.menus[menu_name]):
                 if recipe.name == old_recipe_name:
                     recipe.name = new_recipe.name
                     recipe.ingredients = new_recipe.ingredients
                     recipe.instructions = new_recipe.instructions
                     recipe.image = new_recipe.image
+                    self.menus[menu_name][i] = new_recipe
+                    self.recipes_hash[new_recipe.name] = new_recipe
+                    
                     break
 
     def remove_recipe_from_menu(self, menu_name, recipe_name):
         if menu_name in self.menus:
             self.menus[menu_name] = [recipe for recipe in self.menus[menu_name] if recipe.name != recipe_name]
+            
+            if recipe_name in self.recipes_hash:
+                del self.recipes_hash[recipe_name]
+
+                def get_recipe_by_name(self, recipe_name):
+                    return self.recipes_hash.get(recipe_name, None)
 
 class RestaurantView:
     @staticmethod
@@ -50,6 +61,7 @@ class RestaurantView:
                 print(f"Instructions: {recipe.instructions}")
                 print(f"Image URL: {recipe.image}" if recipe.image else "No image available")
                 print()
+
 
 def main():
     restaurant = RestaurantApp()
