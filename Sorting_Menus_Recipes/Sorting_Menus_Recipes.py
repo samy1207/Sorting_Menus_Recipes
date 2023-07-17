@@ -7,6 +7,16 @@ class Recipe:
 
     def add_image(self, image_url):
         self.image = image_url
+class Menu:
+    def __init__(self, name):
+        self.name = name
+        self.recipes = []
+
+    def add_recipe(self, recipe):
+        self.recipes.append(recipe)
+
+    def remove_recipe(self, recipe_name):
+        self.recipes = [recipe for recipe in self.recipes if recipe.name != recipe_name]
 
 class RestaurantApp:
     def __init__(self):
